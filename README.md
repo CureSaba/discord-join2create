@@ -14,7 +14,7 @@ CLIENT_ID=Your bot client id
 6. Run the bot ```node index.js```
 7. Invite the bot to your server
 
-## Usage
+## Commands
 - ```/rename``` - Rename the voice channel
 - ```/set-limit``` - Set the user limit of the voice channel(set to 0 for no limit)
 - ```/kick``` - Kick a user from the voice channel
