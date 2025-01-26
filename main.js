@@ -11,6 +11,10 @@ const commands = [
         .setDescription('Rename the channel.')
         .addStringOption(option => option.setName('new_name').setDescription('New name for the channel.').setRequired(true)),
     new SlashCommandBuilder()
+        .setName('set-limit')
+        .setDescription('Set the user limit for the channel.')
+        .addIntegerOption(option => option.setName('limit').setDescription('User limit for the channel.').setRequired(true)),
+    new SlashCommandBuilder()
         .setName('ping')
         .setDescription('Replies with Pong!'),
         ].map(command => command.toJSON());
@@ -132,6 +136,32 @@ client.on('interactionCreate', async interaction => {
         } catch (error) {
             console.error(error);
             await interaction.reply('Failed to rename the channel.');
+        }
+    }
+
+    // ユーザー制限の設定
+    if (commandName === 'set-limit') {
+        const limit = options.getInteger('limit');
+        const channelId = getChannelIdByMemberId(interaction.user.id);
+
+        // set-limitコマンドを実行したユーザーが作成したチャンネルがない場合
+        if (!channelId) {
+            return interaction.reply('You do not have a channel to set limit.');
+        }
+
+        const channel = interaction.guild.channels.cache.get(channelId);
+        // チャンネルidが見つからない場合
+        if (!channel) {
+            return interaction.reply('Channel not found.');
+        }
+
+        try {
+            // ユーザー制限の設定
+            await channel.setUserLimit(limit);
+            await interaction.reply(`Set the user limit to ${limit}.`);
+        } catch (error) {
+            console.error(error);
+            await interaction.reply('Failed to set the user limit.');
         }
     }
 
