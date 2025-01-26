@@ -63,7 +63,7 @@ client.on('guildCreate', async (guild) => {
     let joinToCreateChannel = guild.channels.cache.find(channel => channel.name === 'join to create');
 
     if (!joinToCreateChannel) {
-        joinToCreateChannel = await guild.channels.create({
+        await guild.channels.create({
             name: 'join to create',
             type: ChannelType.GuildVoice,
             permissionOverwrites: [
