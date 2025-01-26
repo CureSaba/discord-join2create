@@ -15,6 +15,10 @@ const commands = [
         .setDescription('Set the user limit for the channel.')
         .addIntegerOption(option => option.setName('limit').setDescription('User limit for the channel.').setRequired(true)),
     new SlashCommandBuilder()
+        .setName('kick')
+        .setDescription('Kick the user from the channel.')
+        .addUserOption(option => option.setName('user').setDescription('User to kick from the channel.').setRequired(true)),
+    new SlashCommandBuilder()
         .setName('ping')
         .setDescription('Replies with Pong!'),
         ].map(command => command.toJSON());
@@ -93,6 +97,17 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
 
             // チャンネルの作成者を記録
             channelCreators.set(userChannel.id, member.id);
+        } else {
+            // チャンネルの作成者が違う場合、新しく作成
+            if (channelCreators.has(userChannel.id) && channelCreators.get(userChannel.id) !== member.id) {
+                userChannel = await guild.channels.create({
+                    name: member.user.username,
+                    type: ChannelType.GuildVoice,
+                });
+
+                // チャンネルの作成者を記録
+                channelCreators.set(userChannel.id, member.id);
+            }
         }
 
         // ユーザーを新しいチャンネルに移動
@@ -162,6 +177,36 @@ client.on('interactionCreate', async interaction => {
         } catch (error) {
             console.error(error);
             await interaction.reply('Failed to set the user limit.');
+        }
+    }
+
+    // ユーザーのキック
+    if (commandName === 'kick') {
+        const user = options.getUser('user');
+        const channelId = getChannelIdByMemberId(interaction.user.id);
+
+        // kickコマンドを実行したユーザーが作成したチャンネルがない場合
+        if (!channelId) {
+            return interaction.reply('You do not have a channel to kick user from.');
+        }
+
+        const channel = interaction.guild.channels.cache.get(channelId);
+        // チャンネルidが見つからない場合
+        if (!channel) {
+            return interaction.reply('Channel not found.');
+        }
+
+        try {
+            // ユーザーのキック
+            const member = channel.members.get(user.id);
+            if (!member) {
+                return interaction.reply('User not found in the channel.');
+            }
+            await member.voice.disconnect()
+            await interaction.reply(`Kicked ${user.username} from the channel.`);
+        } catch (error) {
+            console.error(error);
+            await interaction.reply('Failed to kick the user.');
         }
     }
 
