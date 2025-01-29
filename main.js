@@ -123,6 +123,7 @@ client.on('voiceStateUpdate', async (oldState, newState) => {
     }
 });
 
+// インタラクションの処理
 client.on('interactionCreate', async interaction => {
     if (!interaction.isCommand()) return;
 
